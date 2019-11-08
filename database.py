@@ -35,8 +35,8 @@ def create_connection(db_file):
 
 
 class Database:
-    def __init__(self):
-        self.name = 'my_guests.db'
+    def __init__(self, name):
+        self.name = name
         # self.connect = create_connection('my_guests.db')
 
         with create_connection(self.name) as connect:

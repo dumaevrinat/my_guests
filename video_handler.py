@@ -3,35 +3,27 @@ from datetime import datetime, timedelta
 import cv2
 import face_recognition
 
+from config import DATABASE_NAME
 from database import Database
+from doorbell_bot import send_messages_to_owners, send_photo_to_owners
 from guest import Guest
 
 import numpy as np
 
 
 class VideoHandler:
-    database = Database()
+    database = Database(DATABASE_NAME)
 
     def __init__(self, bot):
         self.bot = bot
         print(self.database.select_chat_ids())
         print(self.database.select_owners())
 
-    def send_messages_to_owners(self, text):
-        chat_ids = self.database.select_chat_ids()
-        for chat_id in chat_ids:
-            self.bot.send_message(chat_id, text)
-
-    def send_photo_to_owners(self, photo):
-        cv2.imwrite('detected_faces/face.jpg', photo)
-        chat_ids = self.database.select_chat_ids()
-        for chat_id in chat_ids:
-            self.bot.send_photo(chat_id, open('detected_faces/face.jpg', 'rb'))
-
     def register_new_face(self, face_encoding):
         """
         Добавить лицо в guests
         """
+
         guest = Guest(face_encoding, datetime.now(), datetime.now(), datetime.now(), 1)
         self.database.insert_guest(guest)
 
@@ -48,7 +40,7 @@ class VideoHandler:
         face_distances = face_recognition.face_distance(list(map(lambda g: g.face_encoding, guests)), face_encoding)
         best_match_index = np.argmin(face_distances)
 
-        if face_distances[best_match_index] < 0.6:
+        if face_distances[best_match_index] < 0.66:
             best_match_guest = guests[best_match_index]
             best_match_guest.last_seen = datetime.now()
 
@@ -56,8 +48,8 @@ class VideoHandler:
                 best_match_guest.first_seen_this_interaction = datetime.now()
                 best_match_guest.seen_count += 1
                 print(best_match_guest)
-                self.send_messages_to_owners(best_match_guest)
-                self.send_photo_to_owners(frame)
+                send_messages_to_owners(best_match_guest)
+                send_photo_to_owners(frame)
 
             self.database.update_guest_by_id(best_match_guest)
             return best_match_guest
@@ -68,6 +60,7 @@ class VideoHandler:
 
         while True:
             ret, frame = video_capture.read()
+
             small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
             rgb_small_frame = small_frame[:, :, ::-1]
 
@@ -78,9 +71,8 @@ class VideoHandler:
                 temp_guest = self.lookup_known_face(face_encoding, frame)
                 if temp_guest is None:
                     print('New visitor!')
-                    self.send_messages_to_owners('New visitor')
-                    self.send_photo_to_owners(frame)
-
+                    send_messages_to_owners('New visitor')
+                    send_photo_to_owners(frame)
                     self.register_new_face(face_encoding)
 
             cv2.imshow('Video', frame)
