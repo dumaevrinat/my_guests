@@ -15,7 +15,7 @@ class VideoHandler:
 
     def __init__(self, bot):
         self.bot = bot
-        print(self.database.select_chat_ids())
+        print(self.database.select_owner_chat_ids())
         print(self.database.select_owners())
 
     def register_new_face(self, face_encoding):

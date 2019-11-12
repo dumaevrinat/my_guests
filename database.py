@@ -124,9 +124,15 @@ class Database:
     def insert_owner(self, username):
         with create_connection(self.name) as connect:
             cursor = connect.cursor()
-            cursor.execute(
-                'insert into owners (username) values (?)', (username,))
+            cursor.execute('insert into owners (username) values (?)', (username,))
             connect.commit()
+
+    def delete_owner_by_username(self, username):
+        with create_connection(self.name) as connect:
+            cursor = connect.cursor()
+            cursor.execute('delete from owners where username=?', (username,))
+            connect.commit()
+            return cursor.rowcount
 
     def select_owners(self):
         owners = set()
@@ -141,8 +147,7 @@ class Database:
     def insert_chat(self, chat_id, username):
         with create_connection(self.name) as connect:
             cursor = connect.cursor()
-            cursor.execute(
-                'insert into user_chats (username, chat_id) values (?, ?)', (username, chat_id))
+            cursor.execute('insert into user_chats (username, chat_id) values (?, ?)', (username, chat_id))
             connect.commit()
 
     def select_chats(self):
@@ -155,7 +160,7 @@ class Database:
 
         return chats
 
-    def select_chat_ids(self):
+    def select_owner_chat_ids(self):
         chat_ids = set()
         with create_connection(self.name) as connect:
             cursor = connect.cursor()
