@@ -3,10 +3,6 @@ import numpy as np
 
 
 def lookup_known_face(face_encoding, guests):
-    """
-    Просмотреть есть ли лицо в guests
-    """
-
     if len(guests) == 0:
         return None
 

@@ -3,12 +3,11 @@ from datetime import datetime, timedelta
 import cv2
 import face_recognition
 
+import utils
 from config import DATABASE_NAME
 from database import Database
-from doorbell_bot import send_messages_to_owners, send_photo_to_owners
+from doorbell_bot import send_photo_to_owners
 from guest import Guest
-
-import utils
 
 
 class VideoHandler:
@@ -20,10 +19,6 @@ class VideoHandler:
         print(self.database.select_owners())
 
     def register_new_face(self, face_encoding):
-        """
-        Добавить лицо в guests
-        """
-
         guest = Guest(face_encoding, datetime.now(), datetime.now(), datetime.now(), 1)
         self.database.insert_guest(guest)
 
@@ -40,13 +35,12 @@ class VideoHandler:
             face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
             guests = self.database.select_guests()
-            for face_location, face_encoding in zip(face_locations, face_encodings):
+            for face_encoding in face_encodings:
                 guest = utils.lookup_known_face(face_encoding, guests)
 
                 if guest is None:
                     print('New visitor!')
-                    send_messages_to_owners('New visitor')
-                    send_photo_to_owners(frame)
+                    send_photo_to_owners(frame, 'New visitor!')
                     self.register_new_face(face_encoding)
                 else:
                     guest.last_seen = datetime.now()
@@ -55,8 +49,7 @@ class VideoHandler:
                         guest.first_seen_this_interaction = datetime.now()
                         guest.seen_count += 1
                         print(guest)
-                        send_messages_to_owners(guest)
-                        send_photo_to_owners(frame)
+                        send_photo_to_owners(frame, str(guest))
 
                     self.database.update_guest_by_id(guest)
 

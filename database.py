@@ -97,6 +97,13 @@ class Database:
             )
             connect.commit()
 
+    def delete_guest_by_id(self, uid):
+        with create_connection(self.name) as connect:
+            cursor = connect.cursor()
+            cursor.execute('delete from guests where id=?', (uid,))
+            connect.commit()
+            return cursor.rowcount
+
     def select_guests(self):
         guest_list = []
         with create_connection(self.name) as connect:

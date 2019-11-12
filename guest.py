@@ -10,12 +10,9 @@ class Guest:
         self.name = name
 
     def __str__(self):
-        return 'Guest - uid: {}, name: {}, last_seen: {}, first_seen: {}, {}, seen_count: {}'.format(
+        return '_id:_ {} *{}*\n_last seen_: {}\n_seen count_: {}'.format(
             self.uid,
             self.name,
-            self.last_seen,
-            self.first_seen,
-            self.first_seen_this_interaction,
+            self.last_seen.strftime("%Y-%m-%d %I:%M%p"),
             self.seen_count
         )
-
