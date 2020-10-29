@@ -18,10 +18,6 @@ class VideoHandler:
         print(self.database.select_owner_chat_ids())
         print(self.database.select_owners())
 
-    def register_new_face(self, face_encoding):
-        guest = Guest(face_encoding, datetime.now(), datetime.now(), datetime.now(), 1)
-        self.database.insert_guest(guest)
-
     def video_capture_loop(self):
         video_capture = cv2.VideoCapture(0)
 
@@ -40,8 +36,9 @@ class VideoHandler:
 
                 if guest is None:
                     print('New visitor!')
-                    send_photo_to_owners(frame, 'New visitor!')
-                    self.register_new_face(face_encoding)
+                    guest = Guest(face_encoding, datetime.now(), datetime.now(), datetime.now(), 1)
+                    self.database.insert_guest(guest)
+                    send_photo_to_owners(frame, '*New visitor!*')
                 else:
                     guest.last_seen = datetime.now()
 
